@@ -23,6 +23,7 @@ parser.add_argument('--blind', action='store_true', help='Do not print best fit 
 parser.add_argument('--color-groups', default=None, help='Comma separated list of GROUP=COLOR')
 parser.add_argument("--pullDef",  default=None, help="Choose the definition of the pull, see HiggsAnalysis/CombinedLimit/python/calculate_pulls.py for options")
 parser.add_argument('--POI', default=None, help='Specify a POI to draw')
+parser.add_argument('--groups', default=None, nargs='*', type=str, help='Specify a space-separated list of nuisance groups to consider')
 args = parser.parse_args()
 
 if args.transparent:
@@ -59,6 +60,17 @@ if args.translate is not None:
 data = {}
 with open(args.input) as jsonfile:
     data = json.load(jsonfile)
+
+# Only keep specified nuisance groups, if asked
+if args.groups is not None:
+    print(args.groups)
+    def filterGroup(par):
+        for gr in par["groups"]:
+            if gr in args.groups:
+                return True
+        return False
+
+    data["params"][:] = [ par for par in data["params"] if filterGroup(par) ]
 
 # Set the global plotting style
 plot.ModTDRStyle(l=0.4, b=0.10, width=(900 if args.checkboxes else 700))
